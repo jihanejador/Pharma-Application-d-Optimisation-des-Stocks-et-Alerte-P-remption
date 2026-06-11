@@ -1,6 +1,7 @@
 <?php
-
-$host = 'localhost';
+declare(strict_types=1);
+return function (): PDO{
+    $host = 'localhost';
 $db = 'pharma_fefo';
 $user = 'root';
 $pass = '';
@@ -15,5 +16,6 @@ try{
 
 }
 catch (\PDOException $e){
-    die("Erreur de connexion a la base de donnes : " . $e->getMessage());
+    throw new \PDOException("Erreur de connexion a la base de donnes : " . $e->getMessage());
+}
 }
