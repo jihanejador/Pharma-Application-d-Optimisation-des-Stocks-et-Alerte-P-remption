@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PharmaApp\Controller; 
 
 use PharmaApp\Repository\UserRepository;
+use PharmaApp\Repository\StockRepository;
 use PharmaApp\Entity\User; 
 
 class AuthController 
@@ -83,5 +84,23 @@ class AuthController
         session_destroy();
         header('Location: /');
         exit;
+    }
+}
+class StockController{
+    private StockRepository $stockRepository;
+
+    public function __construct(StockRepository $stockRepository){
+        $this->stockRepository = $stockRepository;
+    }
+    
+    public function dashboard(): void {
+        if(!isset($_SESSION['user_id'])){
+            header('Location: /');
+            exit;
+        }
+
+        $lots = $this->stockRepository->findExpiredAtRiskLots();
+        $title = "tableau de bord - pharmaFEFO";
+        require_once __DIR__ . '/../../templates/dashboard/index.php';
     }
 }
