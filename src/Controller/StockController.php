@@ -14,7 +14,7 @@ class StockController {
     }
 
     
-    public function index(): void {
+    public function dashboard(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
             exit;
