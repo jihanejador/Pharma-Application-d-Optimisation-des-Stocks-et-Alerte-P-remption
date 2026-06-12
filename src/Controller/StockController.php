@@ -13,7 +13,6 @@ class StockController {
         $this->stockRepository = $stockRepository;
     }
 
-    
     public function dashboard(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
@@ -29,7 +28,6 @@ class StockController {
         require_once __DIR__ . '/../../templates/dashboard/index.php';
     }
 
-   
     public function ajouterLot(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
@@ -64,8 +62,7 @@ class StockController {
         }
     }
 
-   
-    public function retirer(): void {
+    public function retirerDuStock(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
             exit;
