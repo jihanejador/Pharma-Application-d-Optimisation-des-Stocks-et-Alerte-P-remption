@@ -8,7 +8,7 @@
         <ul class="mt-2 space-y-1 text-sm text-blue-700 list-disc list-inside">
             <?php 
             $hasNotif = false;
-            foreach ($lots as $b) {
+            foreach ($batches as $b) {
                 if ($b->expiresNextMonth()) {
                     $hasNotif = true;
                     echo "<li>Le produit <strong class='font-semibold'>{$b->getMedicamentNom()}</strong> (Lot: <code class='bg-blue-100 px-1 rounded text-xs'>{$b->getNumeroLot()}</code>) va périmer le mois prochain !</li>";
@@ -125,15 +125,14 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-gray-700">
-                <?php if (empty($lots)): ?>
+                <?php if (empty($batches)): ?>
                     <tr>
                         <td colspan="6" class="text-center text-gray-400 py-8">Aucun lot trouvé avec ces critères.</td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($lots as $batch): ?>
+                    <?php foreach ($batches as $batch): ?>
                         <?php 
                         $color = $batch->getCriticiteColor(); 
-                        // تحديد الكلاسات على حسب الألوان د التنبيه بـ Tailwind
                         $rowBg = 'bg-white hover:bg-gray-50';
                         $badgeStyle = '';
                         
@@ -170,11 +169,13 @@
                             </td>
                             <td class="p-3">
                                 <?php if ($batch->getStatut()->value !== 'EXPIRED' && $batch->getQuantite() > 0): ?>
-                                    <a href="/dashboard/perimer?id=<?= $batch->getId(); ?>" class="text-xs bg-white border border-gray-300 hover:bg-gray-900 hover:text-white font-medium py-1 px-2.5 rounded-md transition inline-block shadow-sm" onclick="return confirm('Retirer ce lot du stock virtuel ?')">
-                                        🗑️ Retirer
+                                    <a href="/dashboard/perimer?id=<?= $batch->getId(); ?>" 
+                                       onclick="return confirm('Voulez-vous vraiment retirer ce lot du stock ?');"
+                                       class="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold py-1 px-2.5 rounded transition shadow-sm">
+                                        Retirer
                                     </a>
                                 <?php else: ?>
-                                    <span class="text-gray-400 text-xs italic">Indisponible</span>
+                                    <span class="text-gray-400 italic text-xs">Aucune action</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -184,8 +185,3 @@
         </table>
     </div>
 </div>
-
-<?php 
-$content = ob_get_clean(); 
-require_once __DIR__ . '/../layout/base.php'; 
-?>
