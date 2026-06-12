@@ -1,5 +1,19 @@
 <script src="https://cdn.tailwindcss.com"></script>
+
 <?php ob_start(); ?>
+
+<div class="space-y-2 mb-4">
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded text-sm text-emerald-700 font-medium">
+            ✅ <?= $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded text-sm text-red-700 font-medium">
+            ❌ <?= $_SESSION['error_message']; unset($_SESSION['error_message']); ?>
+        </div>
+    <?php endif; ?>
+</div>
 
 <div class="space-y-4 mb-6">
     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
@@ -24,11 +38,11 @@
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100 gap-4 mb-8">
     <div>
         <h2 class="text-2xl font-extrabold text-gray-800">💊 Espace de Gestion Intelligente FEFO</h2>
-        <p class="text-gray-400 text-xs mt-1">Session connectée en MVC Strict (Fonctions Isolées)</p>
+        <p class="text-gray-400 text-xs mt-1">Session connectée en MVC Strict (Contrôle des Rôles RBAC Actif)</p>
     </div>
     <div class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 text-sm">
-        <span class="text-gray-600">Bienvenue, <strong class="text-gray-900 font-bold"><?= htmlspecialchars($_SESSION['user_nom']); ?></strong></span>
-        <span class="bg-emerald-600 text-white text-xs font-semibold px-2 py-0.5 rounded uppercase tracking-wider"><?= htmlspecialchars($_SESSION['user_role']); ?></span>
+        <span class="text-gray-600">Bienvenue, <strong class="text-gray-900 font-bold"><?= htmlspecialchars($_SESSION['user_nom'] ?? 'Utilisateur'); ?></strong></span>
+        <span class="bg-emerald-600 text-white text-xs font-semibold px-2 py-0.5 rounded uppercase tracking-wider"><?= htmlspecialchars($_SESSION['user_role'] ?? 'Rôle'); ?></span>
         <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white text-xs font-medium py-1 px-3 rounded transition ml-2 shadow-sm">Déconnexion</a>
     </div>
 </div>
@@ -38,35 +52,42 @@
     <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
         <h5 class="font-bold text-emerald-600 text-base mb-3 flex items-center gap-1">📥 Réception de Commande (Entrée)</h5>
         <hr class="border-gray-100 mb-4">
-        <form method="POST" action="/dashboard/ajouter" class="space-y-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Sélectionner le Médicament</label>
-                <select name="medicament_id" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    <?php foreach($medicaments as $m): ?>
-                        <option value="<?= $m->id; ?>"><?= htmlspecialchars($m->nom); ?></option>
-                    <?php endforeach; ?>
-                </select>
+        <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'preparateur'): ?>
+            <form method="POST" action="/dashboard/ajouter" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Sélectionner le Médicament</label>
+                    <select name="medicament_id" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <?php foreach($medicaments as $m): ?>
+                            <option value="<?= $m->id; ?>"><?= htmlspecialchars($m->nom); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Numéro de Lot</label>
+                    <input type="text" name="numero_lot" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Quantité Reçue</label>
+                    <input type="number" name="quantite" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" min="1" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Date de Péremption (DLU)</label>
+                    <input type="date" name="date_peremption" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Prix d'achat du médicament (DH)</label>
+                    <input type="number" name="prix_achat" step="0.01" min="0" placeholder="Ex: 45.50" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-4 rounded-lg text-xs shadow-sm transition">
+                    Enregistrer l'entrée
+                </button>
+            </form>
+        <?php else: ?>
+            <div class="flex flex-col items-center justify-center h-48 bg-gray-50 rounded-lg border border-dashed border-gray-200 p-4 text-center">
+                <span class="text-gray-400 text-2xl mb-2">🔒</span>
+                <p class="text-xs text-gray-500 font-medium">Votre rôle (Pharmacien) ne vous autorise pas à enregistrer les nouvelles réceptions.</p>
             </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Numéro de Lot</label>
-                <input type="text" name="numero_lot" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Quantité Reçue</label>
-                <input type="number" name="quantite" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" min="1" required>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Date de Péremption (DLU)</label>
-                <input type="date" name="date_peremption" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Prix d'achat du médicament (DH)</label>
-                <input type="number" name="prix_achat" step="0.01" min="0" placeholder="Ex: 45.50" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
-            </div>
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-4 rounded-lg text-xs shadow-sm transition">
-                Enregistrer l'entrée
-            </button>
-        </form>
+        <?php endif; ?>
     </div>
 
     <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
@@ -95,8 +116,15 @@
         <div>
             <h5 class="font-bold text-amber-400 text-base mb-2">📊 Rapport Financier Mensuel</h5>
             <hr class="border-gray-800 mb-4">
-            <p class="text-xs text-gray-400 leading-relaxed">Valeur financière totale du stock perdu (Périmé / À détruire) :</p>
-            <h2 class="text-center text-3xl font-black text-amber-400 my-4 tracking-tight"><?= number_format($totalPertes, 2); ?> DH</h2>
+            <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'pharmacien'): ?>
+                <p class="text-xs text-gray-400 leading-relaxed">Valeur financière totale du stock perdu (Périmé / À détruire) :</p>
+                <h2 class="text-center text-3xl font-black text-amber-400 my-4 tracking-tight"><?= number_format($totalPertes, 2); ?> DH</h2>
+            <?php else: ?>
+                <div class="text-center py-6">
+                    <span class="text-gray-600 text-xl block mb-1">🔒</span>
+                    <p class="text-[11px] text-gray-500 italic">Données financières confidentielles restreintes à votre niveau d'accès.</p>
+                </div>
+            <?php endif; ?>
         </div>
         <div class="text-center text-gray-500 text-[11px] border-t border-gray-800 pt-2">
             Calculé sur la formule : Quantité × Prix d'achat
@@ -170,11 +198,15 @@
                             </td>
                             <td class="p-3">
                                 <?php if ($batch->getStatut()->value !== 'EXPIRED' && $batch->getQuantite() > 0): ?>
-                                    <a href="/dashboard/perimer?id=<?= $batch->getId(); ?>" 
-                                       onclick="return confirm('Voulez-vous vraiment retirer ce lot du stock ?');"
-                                       class="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold py-1 px-2.5 rounded transition shadow-sm">
-                                        Retirer
-                                    </a>
+                                    <?php if ($_SESSION['user_role'] === 'admin'): ?>
+                                        <a href="/dashboard/perimer?id=<?= $batch->getId(); ?>" 
+                                           onclick="return confirm('Voulez-vous vraiment retirer ce lot du stock ?');"
+                                           class="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold py-1 px-2.5 rounded transition shadow-sm">
+                                            Retirer
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 italic text-xs bg-gray-100 px-2 py-1 rounded">Lecture seule</span>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-gray-400 italic text-xs">Aucune action</span>
                                 <?php endif; ?>
