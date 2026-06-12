@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PharmaFEFO\Repository;
+namespace PharmaApp\Repository;
 
 use PDO;
 use PharmaApp\Entity\User;
