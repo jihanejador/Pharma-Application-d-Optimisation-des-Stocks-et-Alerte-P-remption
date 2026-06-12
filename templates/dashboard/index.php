@@ -58,6 +58,10 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">Date de Péremption (DLU)</label>
                 <input type="date" name="date_peremption" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
             </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Prix d'achat du médicament (DH)</label>
+                <input type="number" name="prix_achat" step="0.01" min="0" placeholder="Ex: 45.50" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+            </div>
             <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-4 rounded-lg text-xs shadow-sm transition">
                 Enregistrer l'entrée
             </button>
