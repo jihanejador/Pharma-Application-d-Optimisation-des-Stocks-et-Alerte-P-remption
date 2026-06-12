@@ -133,7 +133,6 @@ class StockRepository {
         }
 
         $totalPerduFinancier = 0.0;
-
         foreach ($lotsPerdus as $lot) {
             $prixAchat = (float)$lot['prix_achat'];
             
