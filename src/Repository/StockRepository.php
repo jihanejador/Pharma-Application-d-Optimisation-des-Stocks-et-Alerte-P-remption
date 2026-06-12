@@ -144,4 +144,31 @@ class StockRepository {
 
         return $totalPerduFinancier;
     }
+    public function saveBatchWithPriceUpdate(StockBatch $batch, float $prixAchat): bool {
+        try {
+            $this->pdo->beginTransaction();
+
+            $stmt1 = $this->pdo->prepare("INSERT INTO lots (medicament_id, numero_lot, quantite, date_peremption, statut)
+                                         VALUES (:medicament_id, :numero_lot, :quantite, :date_peremption, :statut)");
+            $stmt1->execute([
+                ':medicament_id'   => $batch->getMedicamentId(),
+                ':numero_lot'      => $batch->getNumeroLot(),
+                ':quantite'        => $batch->getQuantite(),
+                ':date_peremption' => $batch->getDatePeremption()->format('Y-m-d'),
+                ':statut'          => $batch->getStatut()
+            ]);
+
+            $stmt2 = $this->pdo->prepare("UPDATE medicaments SET prix_achat = :prix WHERE id = :med_id");
+            $stmt2->execute([
+                ':prix'   => $prixAchat,
+                ':med_id' => $batch->getMedicamentId()
+            ]);
+
+            $this->pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->pdo->rollBack();
+            return false;
+        }
+    }
 }
