@@ -1,3 +1,4 @@
+<script src="https://cdn.tailwindcss.com"></script>
 <?php ob_start(); ?>
 
 <div class="space-y-4 mb-6">
