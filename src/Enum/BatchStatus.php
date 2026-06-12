@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace PharmaApp\Enum;
 
-
 class BatchStatus {
     public const ACTIF = 'ACTIF';
     public const EXPIRED = 'EXPIRED';
@@ -14,9 +13,12 @@ class BatchStatus {
         $this->value = $value;
     }
 
-    public static function from(string $value): self {
-        $upperValue = strtoupper($value);
-        if ($upperValue === self::ACTIF || $upperValue === 'ACTIF') {
+    public static function from($value): self {
+        if ($value instanceof self) {
+            return $value;
+        }
+        $upperValue = is_string($value) ? strtoupper($value) : 'EXPIRED';
+        if ($upperValue === self::ACTIF) {
             return new self(self::ACTIF);
         }
         return new self(self::EXPIRED);
