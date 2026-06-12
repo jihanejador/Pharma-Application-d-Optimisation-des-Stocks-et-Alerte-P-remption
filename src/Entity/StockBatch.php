@@ -55,7 +55,6 @@ class StockBatch {
         return $this;
     }
 
-    
     public function setStatut($statut): self {
         if (is_string($statut)) {
             $this->statut = BatchStatus::from($statut);
@@ -65,7 +64,6 @@ class StockBatch {
         return $this;
     }
 
-   
     public function getStatut(): BatchStatus {
         if (is_string($this->statut)) {
             return BatchStatus::from($this->statut);
@@ -88,19 +86,21 @@ class StockBatch {
     }
 
     public function getCriticiteColor(): string {
-    if ($this->statut->value === BatchStatus::EXPIRED || $this->quantite <= 0) {
-        return 'secondary';
+        $statusStr = $this->getStatut()->value;
+        if ($statusStr === BatchStatus::EXPIRED || $this->quantite <= 0) {
+            return 'secondary';
+        }
+        
+        $days = $this->getDaysLeft();
+        if ($days <= 30) return 'danger';  
+        if ($days <= 90) return 'warning'; 
+        
+        return 'success'; 
     }
-    
-    $days = $this->getDaysLeft();
-    if ($days <= 30) return 'danger';  //alert rouge  
-    if ($days <= 90) return 'warning';  //alert orange
-    
-    return 'success'; 
-}
 
     public function expiresNextMonth(): bool {
-        if ($this->statut === BatchStatus::EXPIRED || $this->getQuantite() <= 0) {
+        $statusStr = $this->getStatut()->value;
+        if ($statusStr === BatchStatus::EXPIRED || $this->getQuantite() <= 0) {
             return false;
         }
         $days = $this->getDaysLeft();
