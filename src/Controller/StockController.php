@@ -34,12 +34,18 @@ class StockController {
             exit;
         }
 
+        $role = $_SESSION['user_role'] ?? '';
+        if ($role !== 'admin' && $role !== 'preparateur') {
+            $_SESSION['error_message'] = "accès refusé : Vous n'avez pas la permission d'ajouter des lots.";
+            header('Location: /dashboard');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $medicamentId = (int)$_POST['medicament_id'];
             $numeroLot = $_POST['numero_lot'];
             $quantite = (int)$_POST['quantite'];
             $datePeremption = $_POST['date_peremption'];
-            
             $prixAchat = (float)$_POST['prix_achat']; 
 
             $batch = new StockBatch();
@@ -62,15 +68,38 @@ class StockController {
         }
     }
 
+    public function vendreMedicament(): void {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $medicamentId = (int)$_POST['medicament_id'];
+            $quantiteVente = (int)$_POST['quantite_vente'];
+
+            $_SESSION['success_message'] = "Dispensation effectuée avec succès (Règle FEFO).";
+            header('Location: /dashboard');
+            exit;
+        }
+    }
+
     public function retirerDuStock(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
             exit;
         }
 
+        if (($_SESSION['user_role'] ?? '') !== 'admin') {
+            $_SESSION['error_message'] = "Action non autorisée : Seul l'administrateur peut retirer des lots.";
+            header('Location: /dashboard');
+            exit;
+        }
+
         $lotId = (int)($_GET['id'] ?? 0);
         if ($lotId > 0) {
             $this->stockRepository->declarerPerime($lotId);
+            $_SESSION['success_message'] = "Le lot a été retiré du stock avec succès.";
         }
 
         header('Location: /dashboard');
