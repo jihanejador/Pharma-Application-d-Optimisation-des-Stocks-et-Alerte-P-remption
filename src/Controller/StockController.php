@@ -23,7 +23,8 @@ class StockController {
         $filter = $_GET['filter'] ?? null;
         $batches = $this->stockRepository->findExpiredAtRiskLots($filter);
         $medicaments = $this->stockRepository->getAllMedicaments();
-        $pertesFinancieres = $this->stockRepository->getRapportPertesFinancieres();
+        
+        $totalPertes = $this->stockRepository->getRapportPertesFinancieres();
 
         require_once __DIR__ . '/../../templates/dashboard/index.php';
     }
