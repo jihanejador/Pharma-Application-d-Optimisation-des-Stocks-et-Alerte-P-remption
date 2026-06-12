@@ -47,7 +47,7 @@ L'application est développée selon une architecture **MVC Strict (Modèle-Vue-
 ```text
 ├── public/
 │   ├── css/
-│   │   └── bootstrap.min.css      # Fallback local
+│   │   └── style.css    # Fallback local
 │   └── index.php                  # Point d'entrée unique (Front Controller)
 ├── src/
 │   ├── Controller/                # Logique de contrôle (StockController, AuthController)
