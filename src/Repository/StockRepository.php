@@ -25,20 +25,21 @@ class StockRepository {
             $query .= " WHERE l.statut = 'ACTIF' AND l.date_peremption <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
         }
         
-        $query .= " ORDER BY l.date_peremption ASC";
+        $query .= " ORDER BY l.date_peremption ASC"; 
         
         $stmt = $this->pdo->query($query);
-        $rows = $stmt->fetchAll();
+        $rows = $stmt->fetchAll(\PDO::FETCH_OBJ); 
 
-        $batches = [];
+        $batches = []; 
         foreach ($rows as $row) {
-            $batch = new StockBatch();
+            $batch = new \PharmaApp\Entity\StockBatch();
             $batch->setId((int)$row->id)
                   ->setMedicamentId((int)$row->medicament_id)
                   ->setNumeroLot($row->numero_lot)
                   ->setQuantite((int)$row->quantite)
-                  ->setDatePeremption(new DateTimeImmutable($row->date_peremption))
+                  ->setDatePeremption(new \DateTimeImmutable($row->date_peremption))
                   ->setStatut($row->statut) 
+                  ->setMedicamentNom($row->medicament_nom);
             
             $batches[] = $batch;
         }
@@ -119,11 +120,28 @@ class StockRepository {
 
    
     public function getRapportPertesFinancieres(): float {
-        $stmt = $this->pdo->query("SELECT COUNT(*) AS nb_lots_perdus FROM lots WHERE statut = 'EXPIRED'");
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $nbLotsPerdus = $row ? (int)$row['nb_lots_perdus'] : 0;
-        
-        return $nbLotsPerdus * 150.00; 
+        $query = "SELECT m.prix_achat 
+                  FROM lots l
+                  INNER JOIN medicaments m ON l.medicament_id = m.id
+                  WHERE l.statut = 'EXPIRED'";
+                  
+        $stmt = $this->pdo->query($query);
+        $lotsPerdus = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (!$lotsPerdus) {
+            return 0.00;
+        }
+
+        $totalPerduFinancier = 0.0;
+
+        foreach ($lotsPerdus as $lot) {
+            $prixAchat = (float)$lot['prix_achat'];
+            
+            $quantiteMoyennePerdue = 10; 
+            
+            $totalPerduFinancier += ($quantiteMoyennePerdue * $prixAchat);
+        }
+
+        return $totalPerduFinancier;
     }
 }
