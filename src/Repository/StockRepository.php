@@ -38,21 +38,20 @@ class StockRepository {
                   ->setNumeroLot($row->numero_lot)
                   ->setQuantite((int)$row->quantite)
                   ->setDatePeremption(new DateTimeImmutable($row->date_peremption))
-                  ->setStatut(BatchStatus::from($row->statut))
-                  ->setMedicamentNom($row->medicament_nom);
+                  ->setStatut($row->statut) 
             
             $batches[] = $batch;
         }
         return $batches;
     }
 
-    
+   
     public function getAllMedicaments(): array {
         $stmt = $this->pdo->query("SELECT id, nom FROM medicaments ORDER BY nom ASC");
         return $stmt->fetchAll();
     }
 
-    
+   
     public function saveBatch(StockBatch $batch): bool {
         $stmt = $this->pdo->prepare("INSERT INTO lots (medicament_id, numero_lot, quantite, date_peremption, statut)
                                      VALUES (:medicament_id, :numero_lot, :quantite, :date_peremption, :statut)");
@@ -66,7 +65,7 @@ class StockRepository {
         ]);
     }
 
-   
+    
     public function sortirMedicament(int $medicamentId, int $quantiteDemandee): array {
         $stmt = $this->pdo->prepare("SELECT * FROM lots 
                                      WHERE medicament_id = :med_id AND statut = 'ACTIF' AND quantite > 0 
@@ -112,18 +111,19 @@ class StockRepository {
         return ['success' => true, 'logs' => $logs];
     }
 
-    
+   
     public function declarerPerime(int $lotId): bool {
         $stmt = $this->pdo->prepare("UPDATE lots SET quantite = 0, statut = 'EXPIRED' WHERE id = :id");
         return $stmt->execute([':id' => $lotId]);
     }
 
-    
+   
     public function getRapportPertesFinancieres(): float {
-        $stmt = $this->pdo->query("SELECT SUM(quantite) AS total_perdu FROM lots WHERE statut = 'EXPIRED'");
-        $row = $stmt->fetch();
-        $totalPerdu = $row ? (int)$row->total_perdu : 0;
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS nb_lots_perdus FROM lots WHERE statut = 'EXPIRED'");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        return $totalPerdu * 25.00; 
+        $nbLotsPerdus = $row ? (int)$row['nb_lots_perdus'] : 0;
+        
+        return $nbLotsPerdus * 150.00; 
     }
 }
