@@ -39,27 +39,28 @@ class StockController {
         $this->verifierSession();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $medId = (int)$_POST['medicament_id'];
-            $numLot = trim($_POST['numero_lot']);
-            $qte = (int)$_POST['quantite'];
-            $datePeremp = $_POST['date_peremption'];
+            $medicamentId = (int)$_POST['medicament_id'];
+            $numeroLot = $_POST['numero_lot'];
+            $quantite = (int)$_POST['quantite'];
+            $datePeremption = $_POST['date_peremption'];
+    
+            $prixAchat = (float)$_POST['prix_achat']; 
 
-            if (empty($datePeremp) || new DateTimeImmutable($datePeremp) < new DateTimeImmutable('today')) {
-                $_SESSION['error'] = "Validation refusée : La date de péremption doit être aujourd'hui ou dans le futur !";
-            } else {
-                $batch = new StockBatch();
-                $batch->setMedicamentId($medId)
-                      ->setNumeroLot($numLot)
-                      ->setQuantite($qte)
-                      ->setDatePeremption(new DateTimeImmutable($datePeremp))
-                      ->setStatut(BatchStatus::ACTIF);
+            $batch = new \PharmaApp\Entity\StockBatch();
+            $batch->setMedicamentId($medicamentId)
+                  ->setNumeroLot($numeroLot)
+                  ->setQuantite($quantite)
+                  ->setDatePeremption(new \DateTimeImmutable($datePeremption))
+                  ->setStatut('ACTIF');
 
-                $this->stockRepository->saveBatch($batch);
-                $_SESSION['success'] = "Nouveau lot enregistré avec succès dans la file d'attente FEFO !";
+            $success = $this->stockRepository->saveBatchWithPriceUpdate($batch, $prixAchat);
+
+            if ($success) {
+                $_SESSION['success_message'] = "Lot enregistré et prix du médicament mis à jour !";
             }
-        }
-        header('Location: /dashboard');
-        exit;
+    
+            header('Location: /dashboard');
+            exit;
     }
 
     
