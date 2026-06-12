@@ -149,12 +149,20 @@ class StockRepository {
 
             $stmt1 = $this->pdo->prepare("INSERT INTO lots (medicament_id, numero_lot, quantite, date_peremption, statut)
                                          VALUES (:medicament_id, :numero_lot, :quantite, :date_peremption, :statut)");
+            
+            $statutValue = $batch->getStatut();
+            if ($statutValue instanceof \PharmaApp\Enum\BatchStatus) {
+                $statutValue = $statutValue->value;
+            } elseif (is_object($statutValue) && isset($statutValue->value)) {
+                $statutValue = $statutValue->value;
+            }
+
             $stmt1->execute([
                 ':medicament_id'   => $batch->getMedicamentId(),
                 ':numero_lot'      => $batch->getNumeroLot(),
                 ':quantite'        => $batch->getQuantite(),
                 ':date_peremption' => $batch->getDatePeremption()->format('Y-m-d'),
-                ':statut'          => $batch->getStatut()
+                ':statut'          => $statutValue 
             ]);
 
             $stmt2 = $this->pdo->prepare("UPDATE medicaments SET prix_achat = :prix WHERE id = :med_id");
